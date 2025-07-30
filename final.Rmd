@@ -1,0 +1,291 @@
+---
+title: "Final"
+author: "Lillian Lin"
+date: "2025-07-29"
+output:
+  pdf_document: default
+  html_document: default
+  word_document: default
+---
+
+```{r, setup, include = TRUE, echo = FALSE}
+library(ggplot2)
+library(tidyr)
+library(readr)
+library(rmarkdown)
+library(dplyr)
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# R Coding Final - A Blue Lock Analysis
+
+## Lillian Lin
+
+### GA Tech, Summer 2025
+
+#### Abstract
+
+This project analyzes football performance statistics from the manga *Blue Lock*, using player attributes such as Speed, Defense, Pass, Dribble, Shoot, and Offense.
+
+The **central research questions** are:
+
+1.  Which players demonstrate the highest individual skill scores, and are they consistent top performers overall?
+
+2.  How closely does a player's average skill score align with their overall Player Score?
+
+3.  Do the characters show tendencies towards specific roles (ex. offense-heavy or well-rounded)?
+
+4.  What does the overall distribution of skills look like across all characters - are specific attributes more emphasized than other ones?
+
+The data was compiled from published *Blue Lock* character stat charts found in the manga that was produced onto a website by a fan. Though fictional, these stats mirror real-world performance indicators.
+
+While direct academic literature on fictional sports data is limited, this project is inspired by broader sports analytics works and performance modeling. For example:
+
+-   **Bunker & Thabtah (2019)** explored predictive modeling in football, focusing on performance indicators.
+
+-   **Miller et al. (2014)** emphasized the growing role of analytics in decision-making in professional sports teams.
+
+**Data Source**: <https://blue-lock-marcelones.vercel.app/>
+
+GitHub Profile: [lillianlin01](https://github.com/lillianlin01)\
+Repository: `econ4001_fin`
+
+\newpage
+
+### Table of Contents
+
+1.  Background
+2.  The Data
+    -   Cleaning Goals
+    -   What worked from my Midterm plans
+    -   What did not work from the Midterm and why
+3.  Research Questions
+4.  Analysis Goals & Visualizations
+    -   Tables
+    -   Graphs
+5.  Beyond our R
+6.  Next Steps
+
+### Background
+
+This project is motivated by both personal interest and academic development. As a fan of *Blue Lock*, a manga that emphasizes performance metrics and psychological attributes of football players, I wanted to explore how data science can be applied even in unconventional data sets like fictional sports statistics. At the same time, this analysis will be an opportunity to improve my skills in data cleaning, transformation, and visualization using R. The *Blue Lock* manga, written by Kaneshiro Muneyuki and illustrated by Nomura Yusuke, quantifies character skills in areas such as Speed, Dribbling, and Shooting. These stats can be analyzed like real performance data.
+
+Through this project, I hope to connect entertainment and analysis, asking real data-driven question of fictional athletes, and to present my findings through visualizations and statistical analysis.
+
+\newpage
+
+### The Data
+
+My data set for this project consists of performance statistics from *Blue Lock,* a sports manga series centered on elite football training. Each character is evaluated on six attributes - Speed, Defense, Pass, Dribble, Shoot, and Offense – along with an overall Total score. These ratings were extracted from official character charts published in the manga. It was imported into R using the read_csv() function from the readr package, with further manipulation done using dplyr and tidyr.
+
+Here are the summary statistics of all variables before the cleaning.
+
+```{r, import, include = FALSE}
+stats <- read_csv("bluelock.csv", show_col_types = FALSE)
+```
+
+```{r, sumstats-1}
+summary(stats)
+```
+
+#### Cleaning Goals
+
+My cleaning process focused on ensuring the data set accurately reflected the player statistics shown in the manga while making the structure ready for analysis. Below is the data set and the summary table after cleaning and creating as well as a breakdown of what worked and what didn't.
+
+```{r, sumstats-1}
+skills = c('Speed', 'Defense', 'Pass', 'Dribble', 'Shoot', 'Offense')
+
+stats_clean = stats %>% filter(rowSums(select(., all_of(skills)), na.rm = TRUE) > 0)
+
+stats_clean = stats_clean %>% rename(Player_Score = Total)
+
+stats_clean = stats_clean %>% mutate(Average_Score = rowMeans(select(., all_of(skills)), na.rm = TRUE))
+
+stats_clean
+```
+
+```{r, sumstats-1}
+summary(stats_clean)
+```
+
+#### What Worked from the Midterm Plans
+
+-   **Removing irrelevant rows**: I was able to filter out any rows where all individual skill values were 0 or missing using a combination of rowSums() and filter() from the dplyr package. These rows did not reflect actual performance and would have skewed later analysis.
+
+-   **Renaming columns:** The 'Total' column was renamed to 'Player_Score' using the rename() function to better reflect its purpose. The original name was ambiguous and could be misinterpreted as a sum or average.
+
+-   **Creating the 'Average_Score' column:** I used mutate() and rowMeans() to generate a new column that represents each player's average score across the six performance attributes. This helped standardize performance and provided a way to compare with the Player Score.
+
+#### What Didn't Worked from the Midterm Plans
+
+-   **Dependent column logic:** I originally was going to compute the derived columns earlier in the cleaning stage. However, I learned that creating the Average_Score column before filtering out the zero-value rows led to averages that were not accurate. I had to restructure the order in which I did things, making sure I filter before making new conclusions.
+
+\newpage
+
+### Research Questions
+
+The purpose of this project is to investigate patterns and insights in the performance statistics of Blue Lock characters using a structured data analysis approach. Below are the guiding research questions that inform the visualizations and statistical summaries presented later in the report:
+
+1.  **Which players demonstrate the highest individual skill scores, and are they consistent top performers overall?**
+
+By identifying the top scorers for each skill, I aim to assess whether certain players dominate specific attributes or are more well-rounded across the board.
+
+2.  **How closely does a player's average skill score align with their overall Player Score?**
+
+The Player_Score column reflects the manga's overall evaluation of a character. Comparing this to the calculated Average_Score allows us to see whether external factors — such as in-game leadership, ego, or narrative importance — influence their total score beyond skill.
+
+3.  **Do the characters show tendencies towards specific roles (ex. offense-heavy or well-rounded)?**
+
+Given that *Blue Lock* emphasizes offensive power and striker mentality, this question explores whether the character stats reflect a bias toward attributes like Shooting and Offense or whether there's a balance across all six skills.
+
+4.  **What does the overall distribution of skills look like across all characters - are specific attributes more emphasized than other ones?**
+
+This question aims to identify the spread and central tendencies of each attribute. It also helps determine whether some skills (e.g., Pass or Defense) are underemphasized across the cast, or whether there’s a consistent baseline for most players.
+
+### Analysis Goals & Visualizations
+
+After cleaning the data, my goal is to explore relationships and trends in the performance of *Blue Lock* characters through both summary statistics and visualizations.
+
+#### Tables
+
+To support the following visualizations, I've included a summary table of all skill-related variables.
+
+This table was also included in the *Cleaning Goals* section, but it is shown again here for easier reference alongside the graphs.
+
+```{r, sumstats-1}
+summary(stats_clean)
+```
+
+This table shows the distribution (min, median, mean, max) of each attribute across all players, providing key context for interpreting outliers and identifying general trends in the data.
+
+#### Graphs
+
+Each of the following graphs supports one of the research questions mentioned prior.
+
+1.  **Bar Plot: Highest Individual Stat Holders** This bar chart shows which player holds the highest score for each of the six skill attributes.
+
+```{r, sumstats-1}
+top_stats <- stats_clean %>%
+  pivot_longer(cols = c(Speed, Defense, Pass, Dribble, Shoot, Offense), names_to = "Skill", values_to = "Score") %>%
+  group_by(Skill) %>%
+  slice_max(order_by = Score, n = 1)
+
+ggplot(top_stats, aes(x = Skill, y = Score, fill = Name)) +
+  geom_col() +
+  labs(title = "Top Scoring Player for Each Skill", x = "Skill", y = "Score") +
+  theme_minimal() + 
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+ggsave("top_player_plot.png", width = 8, height = 6, dpi = 300)
+```
+
+This chart identifies the top-performing character for each skill. The results show that no single character dominates across all attributes, suggesting specialization rather than all-around performance. This supports the idea that some characters are designed to excel in specific roles (e.g., a shooter vs. a defender), rather than being universally strong across the board.
+
+2.  **Scatter Plot: Average Score vs. Player Score** This plot visualizes the relationship between a player’s calculated Average_Score and their overall Player_Score, highlighting the top players with the largest gaps between their average score and player score.
+
+```{r, sumstats-1}
+model <- lm(Player_Score ~ Average_Score, data = stats_clean)
+
+stats_clean <- stats_clean %>%
+  mutate(
+    predicted_score = predict(model),
+    residual = Player_Score - predicted_score,
+    abs_residual = abs(residual)
+  )
+
+stats_clean %>%
+  arrange(desc(abs_residual)) %>%
+  select(Name, Average_Score, Player_Score, predicted_score, residual, abs_residual) %>%
+  head(10)
+
+ggplot(stats_clean, aes(x = Average_Score, y = Player_Score)) +
+  geom_point(color = "steelblue") +
+  geom_smooth(method = "lm", se = FALSE, color = "darkred") +
+  geom_text(
+    data = filter(stats_clean, abs_residual > 5), 
+    aes(label = Name),
+    size = 3, hjust = 1.1, vjust = 0.5
+  ) +
+  labs(
+    title = "Player Score Deviations from Regression Line",
+    subtitle = "Labeling Players with the Largest Residuals",
+    x = "Average of Six Attributes",
+    y = "Player Score"
+  ) +
+  theme_minimal()
+
+ggsave("player_score_deviation.png", width = 8, height = 6, dpi = 300)
+
+```
+
+There is a general positive trend between average skill and total player score, but some players appear as outliers, having a higher or lower Player Score than their average would suggest. This discrepancy may reflect the influence of narrative or intangible qualities (such as “ego” or leadership potential) on the overall Player Score — elements emphasized heavily in *Blue Lock.*
+
+3.  **Pie Chart: Skill Totals Across All Players** This chart shows the aggregate skill values for each attribute across all the players.
+
+```{r, sumstats-1}
+skill_totals <- stats_clean %>%
+  summarise(across(c(Speed, Defense, Pass, Dribble, Shoot, Offense), \(x) sum(x, na.rm = TRUE))) %>%
+  pivot_longer(cols = everything(), names_to = "Skill", values_to = "Total") %>%
+  mutate(Percent = Total / sum(Total) * 100,
+         Label = paste0(Skill, "\n", round(Percent, 1), "%"))
+
+ggplot(skill_totals, aes(x = "", y = Total, fill = Skill)) +
+  geom_bar(stat = "identity", width = 1, color = "white") +
+  coord_polar("y") +
+  geom_text(aes(label = Label), position = position_stack(vjust = 0.5)) +
+  labs(title = "Proportion of Total Skill Points by Attribute") +
+  theme_minimal() +
+  theme(axis.title = element_blank(),
+        axis.text = element_blank(),
+        panel.grid = element_blank())
+
+ggsave("total_skill_pie.png", width = 8, height = 6, dpi = 300)
+```
+
+The pie chart reveals that the skill attributes are fairly evenly distributed across players, indicating a generally balanced skill set in the cast. However, Offense stands out slightly, accounting for approximately 17.5% of the total skill points, reflecting the *Blue Lock* manga’s emphasis on offensive capabilities and striker-focused play.
+
+4.  **Density Plots: Distribution of Each Attribute** This series of density plots helps visualize how each attribute is distributed across players.
+
+```{r, sumstats-1}
+stats_clean %>%
+  pivot_longer(cols = c(Speed, Defense, Pass, Dribble, Shoot, Offense), names_to = "Skill", values_to = "Score") %>%
+  ggplot(aes(x = Score, fill = Skill)) +
+  geom_density(alpha = 0.6) +
+  facet_wrap(~ Skill, scales = "free") +
+  labs(title = "Distribution of Each Skill Attribute Across Players") +
+  theme_minimal()
+
+ggsave("each_skill_distribution.png", width = 8, height = 6, dpi = 300)
+```
+
+The distribution plots reveal that some attributes — like Shoot and Speed — are more tightly clustered, while others — like Dribble and Defense — have broader spreads with higher outliers. This supports the earlier insight that the data set favors attacking capabilities, with a few characters being extremely specialized or exceptional in those areas.
+
+### Beyond our R
+
+With some background and the help functions in R, I used functions beyond the scope of our class. While most of my analysis builds on the core functions introduced in class, I also incorporated a few additional functions to improve data visualization and manipulation. These include:
+
+-   **pivot_longer()** – to reshape wide-format data into long format for faceted plots and group-wise summaries.
+
+-   **slice_max()** – to extract the top-performing player(s) for each skill.
+
+-   **geom_col()** – for creating bar plots where height is directly mapped to a variable (used for skill leaders).
+
+-   **summarise() + across()** – used with anonymous functions ((x)) for calculating totals across multiple columns.
+
+-   **geom_bar() + coord_polar()** – to create pie charts from bar data.
+
+-   **geom_density() + facet_wrap()** – to visualize the distribution of each skill across all players in separate plots.
+
+These additions helped me produce cleaner, more understandable visualizations that aligned with my research questions.
+
+### Next Steps
+
+This project successfully cleaned and explored the *Blue Lock* player data set, created multiple visualizations to support my research questions, and identified several interesting trends — such as the relatively balanced skill distribution and the slight bias toward offense. I was able to successfully fulfill my Midterm goals, but considering to expand this research, I was thinking about how I could continue.
+
+For future work, here are the next steps I would consider:
+
+-   **Expand the Data set:** Include more characters or updated stats as the manga progresses. New chapters may introduce revised ratings or new players, which could provide richer analysis and allow for time-series comparisons.
+
+-   **Add Narrative-Based Metrics**: Introduce qualitative or subjective attributes such as “ego,” “leadership,” or “flow state” — core themes in *Blue Lock* — to explore how intangible factors align (or not) with player stats.
+
+-   **Compare Subgroups:** Group players by team, arc, or rank (e.g., top 10, bottom 10) to compare skill distributions across narrative roles or tournament stages.
