@@ -1,11 +1,11 @@
 ---
-title: "Final"
+title: "Blue Lock Player Analysis"
 author: "Lillian Lin"
-date: "2025-07-29"
-output:
-  pdf_document: default
-  html_document: default
-  word_document: default
+date: "Summer 2025"
+output: 
+  pdf_document:
+    number_sections: true
+    fig_caption: true
 ---
 
 ```{r, setup, include = TRUE, echo = FALSE}
@@ -14,7 +14,7 @@ library(tidyr)
 library(readr)
 library(rmarkdown)
 library(dplyr)
-knitr::opts_chunk$set(echo = TRUE)
+library(tinytex)
 ```
 
 # R Coding Final - A Blue Lock Analysis
@@ -84,7 +84,7 @@ Here are the summary statistics of all variables before the cleaning.
 stats <- read_csv("bluelock.csv", show_col_types = FALSE)
 ```
 
-```{r, sumstats-1}
+```{r}
 summary(stats)
 ```
 
@@ -92,7 +92,7 @@ summary(stats)
 
 My cleaning process focused on ensuring the data set accurately reflected the player statistics shown in the manga while making the structure ready for analysis. Below is the data set and the summary table after cleaning and creating as well as a breakdown of what worked and what didn't.
 
-```{r, sumstats-1}
+```{r}
 skills = c('Speed', 'Defense', 'Pass', 'Dribble', 'Shoot', 'Offense')
 
 stats_clean = stats %>% filter(rowSums(select(., all_of(skills)), na.rm = TRUE) > 0)
@@ -104,7 +104,7 @@ stats_clean = stats_clean %>% mutate(Average_Score = rowMeans(select(., all_of(s
 stats_clean
 ```
 
-```{r, sumstats-1}
+```{r}
 summary(stats_clean)
 ```
 
@@ -152,7 +152,7 @@ To support the following visualizations, I've included a summary table of all sk
 
 This table was also included in the *Cleaning Goals* section, but it is shown again here for easier reference alongside the graphs.
 
-```{r, sumstats-1}
+```{r}
 summary(stats_clean)
 ```
 
@@ -164,7 +164,7 @@ Each of the following graphs supports one of the research questions mentioned pr
 
 1.  **Bar Plot: Highest Individual Stat Holders** This bar chart shows which player holds the highest score for each of the six skill attributes.
 
-```{r, sumstats-1}
+```{r}
 top_stats <- stats_clean %>%
   pivot_longer(cols = c(Speed, Defense, Pass, Dribble, Shoot, Offense), names_to = "Skill", values_to = "Score") %>%
   group_by(Skill) %>%
@@ -183,7 +183,7 @@ This chart identifies the top-performing character for each skill. The results s
 
 2.  **Scatter Plot: Average Score vs. Player Score** This plot visualizes the relationship between a player’s calculated Average_Score and their overall Player_Score, highlighting the top players with the largest gaps between their average score and player score.
 
-```{r, sumstats-1}
+```{r}
 model <- lm(Player_Score ~ Average_Score, data = stats_clean)
 
 stats_clean <- stats_clean %>%
@@ -222,7 +222,7 @@ There is a general positive trend between average skill and total player score, 
 
 3.  **Pie Chart: Skill Totals Across All Players** This chart shows the aggregate skill values for each attribute across all the players.
 
-```{r, sumstats-1}
+```{r}
 skill_totals <- stats_clean %>%
   summarise(across(c(Speed, Defense, Pass, Dribble, Shoot, Offense), \(x) sum(x, na.rm = TRUE))) %>%
   pivot_longer(cols = everything(), names_to = "Skill", values_to = "Total") %>%
@@ -246,7 +246,7 @@ The pie chart reveals that the skill attributes are fairly evenly distributed ac
 
 4.  **Density Plots: Distribution of Each Attribute** This series of density plots helps visualize how each attribute is distributed across players.
 
-```{r, sumstats-1}
+```{r}
 stats_clean %>%
   pivot_longer(cols = c(Speed, Defense, Pass, Dribble, Shoot, Offense), names_to = "Skill", values_to = "Score") %>%
   ggplot(aes(x = Score, fill = Skill)) +
